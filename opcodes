@@ -1,0 +1,10 @@
+00 : Move
+	00 [DESTINATION] [SOURCE]
+01 : Increment accumulator by 1
+	01
+10 : Read next insruction from primary storage at location in PSIAR
+	10
+F0 : Halt & terminate program
+	F0
+FF : Comment/dummy instruction
+	FF [COMMENT]
