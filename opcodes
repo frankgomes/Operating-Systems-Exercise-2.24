@@ -2,8 +2,18 @@
 	00 [DESTINATION] [SOURCE]
 01 : Increment accumulator by 1
 	01
+02 : Add value to accumulator
+	02 [REGISTER]
+03 : Subtract value from accumulator
+	03 [REGISTER]
+04 : Set value of register
+	04 [REGISTER] [VALUE]
 10 : Read next insruction from primary storage at location in PSIAR
 	10
+11 : Write data from SDR to primary storage location named in SAR
+	11
+12 : If ACC = 0, increment CSIAR by two
+	12
 F0 : Halt & terminate program
 	F0
 FF : Comment/dummy instruction
