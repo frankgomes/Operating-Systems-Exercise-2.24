@@ -148,7 +148,7 @@ int main() {
 					char* reg = calloc(6, sizeof(char));
 					// Get value to set register to
 					uint16_t val = 0x0;
-					fscanf(c_storage, "%s %X", reg, val);
+					fscanf(c_storage, "%s %hX", reg, &val);
 					// Depending on which register, add value to ACC
 					if (strcmp(reg, "ACC"))			machine.ACC = val;
 					else if (strcmp(reg, "TMPR"))	machine.TMPR = val;
@@ -187,13 +187,8 @@ int main() {
 				return 0;
 			// FF : Dummy comment
 			case 0xFF:
-<<<<<<< HEAD
 				// Consume rest of line
 				fscanf(c_storage, "%*[^\n]");
-||||||| 8e9576f
-=======
-				fscanf(c_storage, "%*[^\n]");
->>>>>>> add553dfade0b1777725a8f378ca88656bc7f18b
 				break;
 			// Unrecognized opcode
 			default:
