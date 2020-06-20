@@ -51,10 +51,13 @@ int main() {
 	char* ps_instruction = calloc(16, sizeof(char));
 	// Buffer to hold primary storage instruction args
 	int ps_args[2] = {0, 0};
+	// Buffers to hold positions in each file
+	fpos_t c_pos, p_pos;
 	// Read and execute control storage instructions
 	// while loop that terminates when there are no more instructions
 	while (1)
 	{
+
 		// If end of file, exit
 		if (feof(c_storage))
 		{
@@ -64,9 +67,11 @@ int main() {
 		// Read next control storage opcode to opcode buffer
 		fscanf(c_storage, "%X", &opcode);
 		// Clear argument buffer
-		cs_args = {calloc(6, sizeof(char)), calloc(6, sizeof(char))};
-		printf("%X\n", opcode); // TODO remove
+		cs_args[0] = calloc(6, sizeof(char));
+		cs_args[1] = calloc(6, sizeof(char));
+		printf("%.2X\n", opcode); // TODO remove
 		// Switch between actions depending on current instruction
+		interpret_opcode:
 		switch (opcode)
 		{
 			// 00 : MOVE
@@ -102,12 +107,61 @@ int main() {
 			case 0x01:
 				machine.ACC++;
 				break;
+			// 02 : ADD
+			case 0x02:
+				{
+					// Get register to add to ACC
+					char* buf = calloc(6, sizeof(char));
+					fscanf(c_storage, "%s", buf);
+					// Depending on which register, add value to ACC
+					if (strcmp(buf, "ACC"))			machine.ACC += machine.ACC;
+					else if (strcmp(buf, "TMPR"))	machine.ACC += machine.TMPR;
+					else if (strcmp(buf, "PSIAR"))	machine.ACC += machine.TMPR;
+				}
+				break;
+			// 03 : SUB
+			case 0x03:
+				{
+					// Get register to add to ACC
+					char* buf = calloc(6, sizeof(char));
+					fscanf(c_storage, "%s", buf);
+					// Depending on which register, add value to ACC
+					if (strcmp(buf, "ACC"))			machine.ACC -= machine.ACC;
+					else if (strcmp(buf, "TMPR"))	machine.ACC -= machine.TMPR;
+					else if (strcmp(buf, "PSIAR"))	machine.ACC -= machine.PSIAR;
+				}
+				break;
+			// 04 : SET
+			case 0x04:
+				{
+					// Get register to set
+					char* reg = calloc(6, sizeof(char));
+					// Get value to set register to
+					uint16_t val = 0x0;
+					fscanf(c_storage, "%s %X", reg, val);
+					// Depending on which register, add value to ACC
+					if (strcmp(reg, "ACC"))			machine.ACC = val;
+					else if (strcmp(reg, "TMPR"))	machine.TMPR = val;
+					else if (strcmp(reg, "CSIAR"))	machine.CSIAR = val;
+					else if (strcmp(reg, "PSIAR"))	machine.PSIAR = val;
+				}
 			// 10 : READ
 			case 0x10:
-				fscanf(p_storage, "%s", ps_instruction);\
+				fscanf(p_storage, "%s", ps_instruction);
 				// ADD
 				if (strcmp(ps_instruction, "ADD") == 0)
 					machine.CSIAR = 10;
+				// HALT
+				if (strcmp(ps_instruction, "HALT") == 0)
+				{
+					opcode = 0x0F;
+					goto interpret_opcode;
+				}
+				break;
+			// 12 : SKIP
+			case 0x12:
+				if (machine.ACC == 0x0) machine.CSIAR += 2;
+				else					machine.CSIAR += 1;
 				break;
 			// F0 : HALT
 			case 0xF0:
@@ -123,6 +177,7 @@ int main() {
 				return 0;
 			// FF : Dummy comment
 			case 0xFF:
+				fscanf(c_storage, "%*[^\n]");
 				break;
 			// Unrecognized opcode
 			default:
