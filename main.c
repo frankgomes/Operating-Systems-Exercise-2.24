@@ -20,6 +20,7 @@ struct ITSIAC
 
 	WORD memory[256];
 };
+
 /*
  ITSIAC rules:
  - one of the operands in any arithmetic operation must be in the accumulator (ACC), the other must be in primary storage
@@ -44,7 +45,7 @@ int main() {
 	// Primary storage is a file called primary_storage in the project root
 	FILE* p_storage = fopen("primary_storage", "r");
 	// Buffer to hold current control storage opcode
-	unsigned int opcode = 0x0;
+	unsigned opcode = 0x0;
 	// Buffer to hold current control storage instruction arguments
 	char* cs_args[2] = {calloc(6, sizeof(char)), calloc(6, sizeof(char))};
 	// Buffer to hold primary storage instruction
@@ -64,7 +65,8 @@ int main() {
 		// Read next control storage opcode to opcode buffer
 		fscanf(c_storage, "%X", &opcode);
 		// Clear argument buffer
-		cs_args = {calloc(6, sizeof(char)), calloc(6, sizeof(char))};
+		cs_args[0] = calloc(6, sizeof(char));
+		cs_args[1] = calloc(6, sizeof(char));
 		printf("%X\n", opcode); // TODO remove
 		// Switch between actions depending on current instruction
 		switch (opcode)
@@ -123,6 +125,8 @@ int main() {
 				return 0;
 			// FF : Dummy comment
 			case 0xFF:
+				// Consume rest of line
+				fscanf(c_storage, "%*[^\n]");
 				break;
 			// Unrecognized opcode
 			default:
