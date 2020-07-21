@@ -22,9 +22,9 @@ struct ITSIAC
 };
 
 /*
- ITSIAC rules:
- - one of the operands in any arithmetic operation must be in the accumulator (ACC), the other must be in primary storage
- - the ITSIAC does not allow direct SAR to SDR transfer
+ * ITSIAC rules:
+ * - one of the operands in any arithmetic operation must be in the accumulator (ACC), the other must be in primary storage
+ * - the ITSIAC does not allow direct SAR to SDR transfer
  */
 
 int main() {
@@ -68,18 +68,9 @@ int main() {
 		// Read next control storage opcode to opcode buffer
 		fscanf(c_storage, "%X", &opcode);
 		// Clear argument buffer
-<<<<<<< HEAD
-		cs_args[0] = calloc(6, sizeof(char));
-		cs_args[1] = calloc(6, sizeof(char));
-		printf("%X\n", opcode); // TODO remove
-||||||| 8e9576f
-		cs_args = {calloc(6, sizeof(char)), calloc(6, sizeof(char))};
-		printf("%X\n", opcode); // TODO remove
-=======
 		cs_args[0] = calloc(6, sizeof(char));
 		cs_args[1] = calloc(6, sizeof(char));
 		printf("%.2X\n", opcode); // TODO remove
->>>>>>> add553dfade0b1777725a8f378ca88656bc7f18b
 		// Switch between actions depending on current instruction
 		interpret_opcode:
 		switch (opcode)
@@ -121,24 +112,26 @@ int main() {
 			case 0x02:
 				{
 					// Get register to add to ACC
-					char* buf = calloc(6, sizeof(char));
-					fscanf(c_storage, "%s", buf);
+					char* reg = calloc(6, sizeof(char));
+					fscanf(c_storage, "%s", reg);
 					// Depending on which register, add value to ACC
-					if (strcmp(buf, "ACC"))			machine.ACC += machine.ACC;
-					else if (strcmp(buf, "TMPR"))	machine.ACC += machine.TMPR;
-					else if (strcmp(buf, "PSIAR"))	machine.ACC += machine.TMPR;
+					if (strcmp(reg, "ACC"))			machine.ACC += machine.ACC;
+					else if (strcmp(reg, "TMPR"))	machine.ACC += machine.TMPR;
+					else if (strcmp(reg, "CSIAR"))	machine.ACC += machine.CSIAR;
+					else if (strcmp(reg, "PSIAR"))	machine.ACC += machine.PSIAR;
 				}
 				break;
 			// 03 : SUB
 			case 0x03:
 				{
 					// Get register to add to ACC
-					char* buf = calloc(6, sizeof(char));
-					fscanf(c_storage, "%s", buf);
+					char* reg = calloc(6, sizeof(char));
+					fscanf(c_storage, "%s", reg);
 					// Depending on which register, add value to ACC
-					if (strcmp(buf, "ACC"))			machine.ACC -= machine.ACC;
-					else if (strcmp(buf, "TMPR"))	machine.ACC -= machine.TMPR;
-					else if (strcmp(buf, "PSIAR"))	machine.ACC -= machine.PSIAR;
+					if (strcmp(reg, "ACC"))			machine.ACC -= machine.ACC;
+					else if (strcmp(reg, "TMPR"))	machine.ACC -= machine.TMPR;
+					else if (strcmp(reg, "CSIAR"))	machine.ACC -= machine.CSIAR;
+					else if (strcmp(reg, "PSIAR"))	machine.ACC -= machine.PSIAR;
 				}
 				break;
 			// 04 : SET
