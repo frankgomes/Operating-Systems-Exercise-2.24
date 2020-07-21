@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "fvector.h"
+
 typedef bool WORD[16];
 
 // Declare registers & memory
@@ -45,15 +47,15 @@ int main() {
 	// Primary storage is a file called primary_storage in the project root
 	FILE* p_storage = fopen("primary_storage", "r");
 	// Buffer to hold current control storage opcode
-	unsigned opcode = 0x0;
+	unsigned int opcode = 0x0;
 	// Buffer to hold current control storage instruction arguments
 	char* cs_args[2] = {calloc(6, sizeof(char)), calloc(6, sizeof(char))};
-	// Buffer to hold primary storage instruction
-	char* ps_instruction = calloc(16, sizeof(char));
-	// Buffer to hold primary storage instruction args
-	int ps_args[2] = {0, 0};
-	// Buffers to hold positions in each file
-	fpos_t c_pos, p_pos;
+
+	// char** that holds all the primary storage lines
+	char** ps_vector;
+	// Pass ps_vector to method fvector(FILE*, char**) to fill it with instructions, getting total count of lines
+	int ps_size = fvector(p_storage, ps_vector);
+
 	// Read and execute control storage instructions
 	// while loop that terminates when there are no more instructions
 	while (1)
