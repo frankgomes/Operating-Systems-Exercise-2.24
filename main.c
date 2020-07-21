@@ -70,7 +70,9 @@ int main() {
 		// Clear argument buffer
 		cs_args[0] = calloc(6, sizeof(char));
 		cs_args[1] = calloc(6, sizeof(char));
-		printf("%.2X\n", opcode); // TODO remove
+		// Print current instruction
+		// TODO remove
+		printf("%.2X\n", opcode);
 		// Switch between actions depending on current instruction
 		interpret_opcode:
 		switch (opcode)
@@ -157,7 +159,7 @@ int main() {
 				// HALT
 				if (strcmp(ps_instruction, "HALT") == 0)
 				{
-					opcode = 0x0F;
+					opcode = 0xF0;
 					goto interpret_opcode;
 				}
 				break;
@@ -185,7 +187,7 @@ int main() {
 				break;
 			// Unrecognized opcode
 			default:
-				printf("UNRECOGNIZED OPCODE\n");
+				printf("UNRECOGNIZED OPCODE %.2X\n", opcode);
 				return 101;
 		}
 	}
