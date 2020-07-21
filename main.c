@@ -51,24 +51,26 @@ int main() {
 	// Buffer to hold current control storage instruction arguments
 	char* cs_args[2] = {calloc(6, sizeof(char)), calloc(6, sizeof(char))};
 
+	// Don't worry, all these NULL arrays are calloc'd in fvector(FILE*, char**)
+	// char** that holds all the control storage lines
+	char** cs_vector = NULL;
+	// Pass cs_vector to method fvector(FILE*, char**) to fill it with instructions, getting total count of lines
+	// TODO remove
+	printf("fvector call\n");
+	int cs_size = fvector(c_storage, cs_vector);
 	// char** that holds all the primary storage lines
-	char** ps_vector;
+	char** ps_vector = NULL;
 	// Pass ps_vector to method fvector(FILE*, char**) to fill it with instructions, getting total count of lines
+	// TODO remove
+	printf("fvector call\n");
 	int ps_size = fvector(p_storage, ps_vector);
 
 	// Read and execute control storage instructions
 	// while loop that terminates when there are no more instructions
 	while (1)
 	{
-
-		// If end of file, exit
-		if (feof(c_storage))
-		{
-			printf("\nEND OF CONTROL STORAGE\n");
-			return 100;
-		}
-		// Read next control storage opcode to opcode buffer
-		fscanf(c_storage, "%X", &opcode);
+		// Read control storage opcode at CSIAR to opcode buffer
+		sscanf(cs_vector[machine.CSIAR], "%X", &opcode);
 		// Clear argument buffer
 		cs_args[0] = calloc(6, sizeof(char));
 		cs_args[1] = calloc(6, sizeof(char));
@@ -83,7 +85,7 @@ int main() {
 			case 0x00:
 			{
 				// Get arguments for instruction
-				fscanf(c_storage, " %s %s", cs_args[0], cs_args[1]);
+				sscanf(cs_vector[machine.CSIAR], " %s %s", cs_args[0], cs_args[1]);
 				uint16_t* destination;
 				uint16_t* source;
 				// Set destination of MOVE
@@ -117,7 +119,7 @@ int main() {
 				{
 					// Get register to add to ACC
 					char* reg = calloc(6, sizeof(char));
-					fscanf(c_storage, "%s", reg);
+					sscanf(cs_vector[machine.CSIAR], "%s", reg);
 					// Depending on which register, add value to ACC
 					if (strcmp(reg, "ACC"))			machine.ACC += machine.ACC;
 					else if (strcmp(reg, "TMPR"))	machine.ACC += machine.TMPR;
@@ -145,7 +147,7 @@ int main() {
 					char* reg = calloc(6, sizeof(char));
 					// Get value to set register to
 					uint16_t val = 0x0;
-					fscanf(c_storage, "%s %hX", reg, &val);
+					sscanf(cs_vector[machine.CSIAR], "%s %hX", reg, &val);
 					// Depending on which register, add value to ACC
 					if (strcmp(reg, "ACC"))			machine.ACC = val;
 					else if (strcmp(reg, "TMPR"))	machine.TMPR = val;
@@ -154,16 +156,15 @@ int main() {
 				}
 			// 10 : READ
 			case 0x10:
-				fscanf(p_storage, "%s", ps_instruction);
-				// ADD
-				if (strcmp(ps_instruction, "ADD") == 0)
-					machine.CSIAR = 10;
-				// HALT
-				if (strcmp(ps_instruction, "HALT") == 0)
-				{
-					opcode = 0xF0;
-					goto interpret_opcode;
-				}
+				// Read next (up to) 16 bits from primary storage @ address in SAR
+				sscanf(ps_vector[machine.SAR], "%4hX", &machine.SDR);
+				break;
+			// 11 : WRITE
+			case 0x11:
+				// Clear line to prevent overwriting
+				ps_vector[machine.SAR] = calloc(16, sizeof(char));
+				// Write SDR contents into ps_vector @ address in SAR
+				sprintf(ps_vector[machine.SAR], "%4hX", machine.SDR);
 				break;
 			// 12 : SKIP
 			case 0x12:
@@ -172,14 +173,14 @@ int main() {
 				break;
 			// F0 : HALT
 			case 0xF0:
-				printf("-----------------------\n");
-				printf("ACC:   %.16X\n", machine.ACC);
-				printf("TMPR:  %.16X\n", machine.TMPR);
-				printf("CSIAR:         %.8X\n", machine.CSIAR);
-				printf("PSIAR:         %.8X\n", machine.PSIAR);
-				printf("SAR:           %.8X\n", machine.SAR);
-				printf("SDR:   %.16X\n", machine.SDR);
-				printf("MIR:           %.8X\n", machine.MIR);
+				printf("----------\n");
+				printf("ACC:   %.4X\n", machine.ACC);
+				printf("TMPR:  %.4X\n", machine.TMPR);
+				printf("CSIAR:   %.2X\n", machine.CSIAR);
+				printf("PSIAR:   %.2X\n", machine.PSIAR);
+				printf("SAR:     %.2X\n", machine.SAR);
+				printf("SDR:   %.4X\n", machine.SDR);
+				printf("MIR:   %.2X\n", machine.MIR);
 				printf("END OF JOB\n");
 				return 0;
 			// FF : Dummy comment

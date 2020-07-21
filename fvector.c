@@ -5,12 +5,22 @@
 
 int fvector(FILE* storage, char** vector)
 {
+	// Check for file errors, exit with code 13 if so
+	if (ferror(storage)) exit(13);
+
 	// int to hold vector size
-	int v_size = 0;
+	int v_size = 0l;
 
 	// For every line in supplied file, increment v_size
 	while (!feof(storage))
+	{
 		v_size++;
+		// Forward file scan
+		fseek(storage, 1, SEEK_CUR);
+		printf("%d\n", v_size);// TODO remove
+	}
+	// TODO remove
+	printf("feof reached\n");
 
 	// Send file pointer to beginning of file
 	rewind(storage);
